@@ -70,7 +70,7 @@ void initialize_uart(uint32_t baudrate)
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .rx_flow_ctrl_thresh = 0,
         .source_clk = UART_SCLK_DEFAULT,
-        .flags = {.backup_before_sleep = 0}};
+};
 
     int intr_alloc_flags = 0;
 
@@ -199,3 +199,4 @@ extern "C" void app_main(void)
     xTaskCreate(uart_task, "uart_task", 1024 * 2, (void *)0, 10, NULL);
     std::cout << "[PP MDK] PortaPack - Module Develoment Kit is ready." << std::endl;
 }
+
