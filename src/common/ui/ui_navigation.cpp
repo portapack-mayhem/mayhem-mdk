@@ -1,4 +1,5 @@
 #include "ui_navigation.hpp"
+#include "file_reader.hpp"
 
 namespace ui {
 
@@ -73,6 +74,93 @@ bool NavigationView::set_on_pop(std::function<void()> on_pop) {
 
     top.on_pop = on_pop;
     return true;
+}
+
+void NavigationView::display_modal(
+    const std::string& title,
+    const std::string& message) {
+    display_modal(title, message, INFO, nullptr);
+}
+
+void NavigationView::display_modal(
+    const std::string& title,
+    const std::string& message,
+    modal_t type,
+    std::function<void(bool)> on_choice,
+    bool compact) {
+    push<ModalMessageView>(title, message, type, on_choice, compact);
+}
+
+/* ModalMessageView ******************************************************/
+
+ModalMessageView::ModalMessageView(
+    NavigationView& nav,
+    const std::string& title,
+    const std::string& message,
+    modal_t type,
+    std::function<void(bool)> on_choice,
+    bool compact)
+    : title_{title},
+      message_{message},
+      type_{type},
+      on_choice_{on_choice},
+      compact{true} {
+    (void)compact;  // no bitmaps for now
+    if (type == INFO) {
+        add_child(&button_ok);
+        button_ok.on_select = [this, &nav](Button&) {
+            if (on_choice_) on_choice_(true);
+            nav.pop();
+        };
+
+    } else if (type == YESNO) {
+        add_children({&button_yes,
+                      &button_no});
+
+        button_yes.on_select = [this, &nav](Button&) {
+            if (on_choice_) on_choice_(true);
+            nav.pop();
+        };
+        button_no.on_select = [this, &nav](Button&) {
+            if (on_choice_) on_choice_(false);
+            nav.pop();
+        };
+
+    } else {  // ABORT
+        add_child(&button_ok);
+
+        button_ok.on_select = [this, &nav](Button&) {
+            if (on_choice_) on_choice_(true);
+            nav.pop(false);  // Pop the modal.
+            nav.pop();       // Pop the underlying view.
+        };
+    }
+}
+
+void ModalMessageView::paint(Painter& painter) {
+    /*if (!compact) painter.draw_bitmap({UI_POS_X_CENTER(6),
+                                       UI_POS_Y(4)},
+                                      bitmap_icon_utilities.size,
+                                      bitmap_icon_utilities.data,
+                                      Theme::getInstance()->bg_darkest->foreground,
+                                      Theme::getInstance()->bg_darkest->background, 3);*/
+
+    // Break lines.
+    auto lines = split_string(message_, '\n');
+    for (size_t i = 0; i < lines.size(); ++i) {
+        painter.draw_string(
+            {1 * 8, (Coord)(((compact) ? 8 * 3 : 120) + (i * 16))},
+            style(),
+            lines[i]);
+    }
+}
+
+void ModalMessageView::focus() {
+    if ((type_ == YESNO)) {
+        button_yes.focus();
+    } else {
+        button_ok.focus();
+    }
 }
 
 }  // namespace ui

@@ -47,7 +47,7 @@ ui::Widget* touch_widget(ui::Widget* const w, ui::TouchEvent event) {
 
 ui::Widget* captured_widget{nullptr};
 
-extern "C" void OnTouchEvent(int x, int y, uint32_t type) {
+extern "C" bool OnTouchEvent(int x, int y, uint32_t type) {
     if (standaloneViewMirror) {
         ui::TouchEvent event{{x, y}, static_cast<ui::TouchEvent::Type>(type)};
 
@@ -60,9 +60,9 @@ extern "C" void OnTouchEvent(int x, int y, uint32_t type) {
             }
         }
 
-        if (captured_widget)
-            captured_widget->on_touch(event);
+        if (captured_widget) return captured_widget->on_touch(event);
     }
+    return false;
 }
 
 extern "C" void OnFocus() {

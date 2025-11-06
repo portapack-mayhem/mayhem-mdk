@@ -1,8 +1,14 @@
 #pragma once
 
 #include "ui_widget.hpp"
-
+#include "ui_helper.hpp"
 namespace ui {
+
+enum modal_t {
+    INFO = 0,
+    YESNO,
+    ABORT
+};
 
 class NavigationView : public ui::View {
    public:
@@ -10,6 +16,14 @@ class NavigationView : public ui::View {
         : View{parent_rect}, context_(context) {
         set_style(ui::Theme::getInstance()->bg_dark);
     }
+
+    void display_modal(const std::string& title, const std::string& message);
+    void display_modal(
+        const std::string& title,
+        const std::string& message,
+        modal_t type,
+        std::function<void(bool)> on_choice = nullptr,
+        bool compact = false);
 
     template <class T, class... Args>
     T* push(Args&&... args) {
@@ -48,6 +62,44 @@ class NavigationView : public ui::View {
 
     void free_view();
     void update_view();
+};
+
+class ModalMessageView : public View {
+   public:
+    ModalMessageView(
+        NavigationView& nav,
+        const std::string& title,
+        const std::string& message,
+        modal_t type,
+        std::function<void(bool)> on_choice,
+        bool compact = false);
+
+    void paint(Painter& painter) override;
+    void focus() override;
+
+    std::string title() const override { return title_; };
+
+   private:
+    const std::string title_;
+    const std::string message_;
+    const modal_t type_;
+    const std::function<void(bool)> on_choice_;
+    const bool compact;
+
+    Button button_ok{
+        {UI_POS_X_CENTER(10), UI_POS_Y_BOTTOM(5), UI_POS_WIDTH(10), UI_POS_HEIGHT(3)},
+        "OK",
+    };
+
+    Button button_yes{
+        {UI_POS_X_CENTER(8) - UI_POS_WIDTH(6), UI_POS_Y_BOTTOM(5), UI_POS_WIDTH(8), UI_POS_HEIGHT(3)},
+        "YES",
+    };
+
+    Button button_no{
+        {UI_POS_X_CENTER(8) + UI_POS_WIDTH(6), UI_POS_Y_BOTTOM(5), UI_POS_WIDTH(8), UI_POS_HEIGHT(3)},
+        "NO",
+    };
 };
 
 }  // namespace ui

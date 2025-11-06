@@ -24,6 +24,7 @@
 #define __UI_MENU_H__
 
 #include "ui.hpp"
+#include "ui_helper.hpp"
 #include "ui_widget.hpp"
 #include "ui_painter.hpp"
 #include "bitmap.hpp"
@@ -77,7 +78,7 @@ class MenuView : public View {
     std::function<void(void)> on_right{};
     std::function<void(void)> on_highlight{nullptr};
 
-    MenuView(Rect new_parent_rect = {0, 0, screen_width, screen_height - 16},
+    MenuView(Rect new_parent_rect = {0, 0, UI_POS_MAXWIDTH, UI_POS_MAXHEIGHT - 16},
              bool keep_highlight = false);
 
     ~MenuView();
@@ -98,6 +99,7 @@ class MenuView : public View {
     bool on_key(const KeyEvent event) override;
     bool on_encoder(const EncoderEvent event) override;
     bool on_keyboard(const KeyboardEvent event) override;
+    bool on_touch(const TouchEvent event) override;
 
    private:
     void update_items();
@@ -109,7 +111,7 @@ class MenuView : public View {
     std::vector<std::unique_ptr<MenuItemView>> menu_item_views{};
 
     Image arrow_more{
-        {228, screen_height - 8, 8, 8},
+        {UI_POS_MAXWIDTH - 12, UI_POS_MAXHEIGHT - 8, 8, 8},
         &bitmap_more,
         Theme::getInstance()->bg_darkest->foreground,
         Theme::getInstance()->bg_darkest->background};
